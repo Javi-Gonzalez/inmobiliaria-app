@@ -1,0 +1,11 @@
+com\inmobiliaria\model\Inquilino.class
+com\inmobiliaria\model\Propietario.class
+com\inmobiliaria\service\FacturacionService.class
+com\inmobiliaria\repository\InmuebleRepository.class
+com\inmobiliaria\service\PdfGeneratorService.class
+com\inmobiliaria\controller\ApiController.class
+com\inmobiliaria\repository\PropietarioRepository.class
+com\inmobiliaria\InmobiliariaApplication.class
+com\inmobiliaria\model\Inmueble.class
+com\inmobiliaria\repository\InquilinoRepository.class
+com\inmobiliaria\service\EmailService.class

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inmobiliaria Management ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table-hover tbody tr:hover { background-color: #f8fafc; }
+        .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="bi bi-building-fill me-2"></i>Gestión Inmobiliaria ERP</a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+
+        <!-- Banner Facturación -->
+        <div class="card p-4 mb-4 bg-white border-start border-4 border-primary">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="bi bi-receipt me-2 text-primary"></i>Automatización de Facturación Mensual</h5>
+                    <p class="text-muted mb-0 small">Genera y envía los recibos en PDF por correo electrónico a final de mes.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button onclick="enviarFacturasInquilinos()" class="btn btn-success fw-semibold">
+                        <i class="bi bi-send-fill me-2"></i>Enviar Facturas a Inquilinos
+                    </button>
+                    <button onclick="enviarLiquidacionesPropietarios()" class="btn btn-dark fw-semibold">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Enviar Liquidaciones a Propietarios
+                    </button>
+                </div>
+            </div>
+            <div id="alertBox" class="mt-3"></div>
+        </div>
+
+        <!-- Pestañas Principales -->
+        <ul class="nav nav-pills mb-4 gap-2" id="mainTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold px-4" data-bs-toggle="tab" data-bs-target="#inmueblesTab">
+                    <i class="bi bi-house-door me-2"></i>Inmuebles
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold px-4" data-bs-toggle="tab" data-bs-target="#propietariosTab">
+                    <i class="bi bi-person-badge me-2"></i>Propietarios
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold px-4" data-bs-toggle="tab" data-bs-target="#inquilinosTab">
+                    <i class="bi bi-people me-2"></i>Inquilinos
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- TAB INMUEBLES -->
+            <div class="tab-pane fade show active" id="inmueblesTab">
+                <div class="card p-4 mb-4">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-plus-circle me-1"></i> Registrar Inmueble con Atributos Completos</h6>
+                    <form id="formInmueble" class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Tipo</label>
+                            <select id="inmTipo" class="form-select" required>
+                                <option value="PISO">Piso</option>
+                                <option value="CASA">Casa / Chalet</option>
+                                <option value="LOCAL">Local Comercial</option>
+                                <option value="GARAJE">Garaje / Trastero</option>
+                                <option value="TERRENO">Terreno</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Dirección Completa</label>
+                            <input type="text" id="inmDir" class="form-control" placeholder="Calle / Avda..." required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Población / Ciudad</label>
+                            <input type="text" id="inmPoblacion" class="form-control" placeholder="Madrid">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Código Postal</label>
+                            <input type="text" id="inmCp" class="form-control" placeholder="28001">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">M² Superficie</label>
+                            <input type="number" step="0.1" id="inmM2" class="form-control" placeholder="85">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Habitaciones</label>
+                            <input type="number" id="inmHab" class="form-control" placeholder="3">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Baños</label>
+                            <input type="number" id="inmBanos" class="form-control" placeholder="2">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Precio Alquiler (€)</label>
+                            <input type="number" step="0.01" id="inmPrecio" class="form-control" placeholder="850" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Honorarios Agencia (€)</label>
+                            <input type="number" step="0.01" id="inmHonorarios" class="form-control" placeholder="85">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Estado</label>
+                            <select id="inmEstado" class="form-select">
+                                <option value="DISPONIBLE">Disponible</option>
+                                <option value="ALQUILADO">Alquilado</option>
+                                <option value="MANTENIMIENTO">En Mantenimiento</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Propietario Vinculado</label>
+                            <select id="inmPropietarioSelect" class="form-select" required>
+                                <option value="">Seleccione Propietario...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Notas / Descripción</label>
+                            <input type="text" id="inmNotas" class="form-control" placeholder="Balcón, ascensor, reformado...">
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Guardar Inmueble</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h6 class="fw-bold mb-3">Listado de Inmuebles Registrados</h6>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Dirección / Población</th>
+                                <th>Características</th>
+                                <th>Precio</th>
+                                <th>Propietario</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaInmuebles"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB PROPIETARIOS -->
+            <div class="tab-pane fade" id="propietariosTab">
+                <div class="card p-4 mb-4">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-plus me-1"></i> Registrar Propietario</h6>
+                    <form id="formPropietario" class="row g-3">
+                        <div class="col-md-3"><label class="form-label small fw-bold">Nombre</label><input type="text" id="propNombre" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Primer Apellido</label><input type="text" id="propApellido1" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Segundo Apellido</label><input type="text" id="propApellido2" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">DNI / NIE</label><input type="text" id="propDni" class="form-control" placeholder="12345678X" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Email</label><input type="email" id="propEmail" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Teléfono</label><input type="text" id="propTel" class="form-control"></div>
+                        <div class="col-md-5"><label class="form-label small fw-bold">Cuenta IBAN</label><input type="text" id="propIban" class="form-control" placeholder="ES91 0000 0000 0000 0000"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Dirección Postal de Contacto</label><input type="text" id="propDirPostal" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Notas Adicionales</label><input type="text" id="propNotas" class="form-control"></div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Guardar Propietario</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h6 class="fw-bold mb-3">Listado de Propietarios</h6>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>DNI/NIE</th>
+                                <th>Nombre Completo</th>
+                                <th>Contacto</th>
+                                <th>IBAN</th>
+                                <th>Inmuebles</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPropietarios"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB INQUILINOS -->
+            <div class="tab-pane fade" id="inquilinosTab">
+                <div class="card p-4 mb-4">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-check me-1"></i> Registrar e Asignar Inquilino</h6>
+                    <form id="formInquilino" class="row g-3">
+                        <div class="col-md-3"><label class="form-label small fw-bold">Nombre</label><input type="text" id="inqNombre" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Primer Apellido</label><input type="text" id="inqApellido1" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Segundo Apellido</label><input type="text" id="inqApellido2" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">DNI / NIE</label><input type="text" id="inqDni" class="form-control" placeholder="87654321Y" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Email</label><input type="email" id="inqEmail" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Teléfono</label><input type="text" id="inqTel" class="form-control"></div>
+                        <div class="col-md-5"><label class="form-label small fw-bold">Cuenta IBAN (Domiciliación)</label><input type="text" id="inqIban" class="form-control" placeholder="ES91..."></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Fecha Inicio Contrato</label><input type="date" id="inqFechaContrato" class="form-control"></div>
+                        <div class="col-md-8"><label class="form-label small fw-bold">Asignar Inmueble Disponible</label><select id="inqInmuebleSelect" class="form-select"></select></div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Guardar Inquilino</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h6 class="fw-bold mb-3">Listado de Inquilinos</h6>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>DNI/NIE</th>
+                                <th>Nombre Completo</th>
+                                <th>Contacto</th>
+                                <th>Inmueble Asignado</th>
+                                <th>Inicio Contrato</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaInquilinos"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR INMUEBLE -->
+    <div class="modal fade" id="modalEditInmueble" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Modificar Todos los Atributos del Inmueble</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditInmueble" class="row g-3">
+                        <input type="hidden" id="editInmId">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Tipo</label>
+                            <select id="editInmTipo" class="form-select" required>
+                                <option value="PISO">Piso</option>
+                                <option value="CASA">Casa / Chalet</option>
+                                <option value="LOCAL">Local Comercial</option>
+                                <option value="GARAJE">Garaje / Trastero</option>
+                                <option value="TERRENO">Terreno</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5"><label class="form-label small fw-bold">Dirección</label><input type="text" id="editInmDir" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Población</label><input type="text" id="editInmPoblacion" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">C.P.</label><input type="text" id="editInmCp" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">M²</label><input type="number" step="0.1" id="editInmM2" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Habitaciones</label><input type="number" id="editInmHab" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label small fw-bold">Baños</label><input type="number" id="editInmBanos" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Precio Alquiler (€)</label><input type="number" step="0.01" id="editInmPrecio" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Honorarios (€)</label><input type="number" step="0.01" id="editInmHonorarios" class="form-control"></div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Estado</label>
+                            <select id="editInmEstado" class="form-select">
+                                <option value="DISPONIBLE">Disponible</option>
+                                <option value="ALQUILADO">Alquilado</option>
+                                <option value="MANTENIMIENTO">En Mantenimiento</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Propietario Vinculado</label><select id="editInmPropietarioSelect" class="form-select"></select></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Notas</label><input type="text" id="editInmNotas" class="form-control"></div>
+                        <div class="col-12 text-end mt-3">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success px-4">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR PROPIETARIO -->
+    <div class="modal fade" id="modalEditPropietario" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Modificar Todos los Atributos del Propietario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditPropietario" class="row g-3">
+                        <input type="hidden" id="editPropId">
+                        <div class="col-md-4"><label class="form-label small fw-bold">Nombre</label><input type="text" id="editPropNombre" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">1º Apellido</label><input type="text" id="editPropApellido1" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">2º Apellido</label><input type="text" id="editPropApellido2" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">DNI/NIE</label><input type="text" id="editPropDni" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Email</label><input type="email" id="editPropEmail" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Teléfono</label><input type="text" id="editPropTel" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Cuenta IBAN</label><input type="text" id="editPropIban" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Dirección Postal</label><input type="text" id="editPropDirPostal" class="form-control"></div>
+                        <div class="col-md-12"><label class="form-label small fw-bold">Notas</label><input type="text" id="editPropNotas" class="form-control"></div>
+                        <div class="col-12 text-end mt-3">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success px-4">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR INQUILINO -->
+    <div class="modal fade" id="modalEditInquilino" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Modificar Todos los Atributos del Inquilino</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditInquilino" class="row g-3">
+                        <input type="hidden" id="editInqId">
+                        <div class="col-md-4"><label class="form-label small fw-bold">Nombre</label><input type="text" id="editInqNombre" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">1º Apellido</label><input type="text" id="editInqApellido1" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">2º Apellido</label><input type="text" id="editInqApellido2" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">DNI/NIE</label><input type="text" id="editInqDni" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Email</label><input type="email" id="editInqEmail" class="form-control" required></div>
+                        <div class="col-md-4"><label class="form-label small fw-bold">Teléfono</label><input type="text" id="editInqTel" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">IBAN Domiciliación</label><input type="text" id="editInqIban" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Fecha Inicio Contrato</label><input type="date" id="editInqFechaContrato" class="form-control"></div>
+                        <div class="col-md-12"><label class="form-label small fw-bold">Inmueble Asignado</label><select id="editInqInmuebleSelect" class="form-select"></select></div>
+                        <div class="col-12 text-end mt-3">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success px-4">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = "http://localhost:8080/api";
+        let cachePropietarios = [], cacheInmuebles = [], cacheInquilinos = [];
+
+        async function cargarTodo() {
+            const resProp = await fetch(`${API_URL}/propietarios`);
+            cachePropietarios = await resProp.json();
+            
+            document.getElementById('tablaPropietarios').innerHTML = cachePropietarios.map(p => `
+                <tr>
+                    <td><span class="badge bg-secondary">${p.dniNie}</span></td>
+                    <td class="fw-bold">${p.nombre} ${p.apellido1 || ''} ${p.apellido2 || ''}</td>
+                    <td><i class="bi bi-envelope me-1"></i>${p.email}<br><small class="text-muted"><i class="bi bi-telephone me-1"></i>${p.telefono || '-'}</small></td>
+                    <td class="small font-monospace">${p.iban || '-'}</td>
+                    <td><span class="badge bg-info text-dark">${p.inmuebles ? p.inmuebles.length : 0} Inmuebles</span></td>
+                    <td>
+                        <button onclick="abrirModalProp(${p.id})" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-fill"></i> Modificar</button>
+                        <button onclick="eliminarProp(${p.id})" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            const propOptions = '<option value="">Seleccione Propietario...</option>' + cachePropietarios.map(p => `<option value="${p.id}">${p.nombre} ${p.apellido1 || ''} (${p.dniNie})</option>`).join('');
+            document.getElementById('inmPropietarioSelect').innerHTML = propOptions;
+            document.getElementById('editInmPropietarioSelect').innerHTML = propOptions;
+
+            const resInm = await fetch(`${API_URL}/inmuebles`);
+            cacheInmuebles = await resInm.json();
+
+            document.getElementById('tablaInmuebles').innerHTML = cacheInmuebles.map(i => `
+                <tr>
+                    <td><span class="badge bg-light text-dark border">${i.tipo}</span></td>
+                    <td><strong>${i.direccion}</strong><br><small class="text-muted">${i.poblacion || ''} ${i.codigoPostal ? '('+i.codigoPostal+')' : ''}</small></td>
+                    <td class="small">${i.m2 ? i.m2+' m²' : ''} ${i.habitaciones ? '| '+i.habitaciones+' habs' : ''} ${i.baños ? '| '+i.baños+' baños' : ''}</td>
+                    <td class="text-success fw-bold">${i.precioAlquiler} €/mes</td>
+                    <td>${i.propietario ? i.propietario.nombre + ' ' + (i.propietario.apellido1 || '') : '<span class="text-muted">Sin Propietario</span>'}</td>
+                    <td><span class="badge ${i.estado === 'ALQUILADO' ? 'bg-danger' : (i.estado === 'DISPONIBLE' ? 'bg-success' : 'bg-warning text-dark')} badge-status">${i.estado}</span></td>
+                    <td>
+                        <button onclick="abrirModalInm(${i.id})" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-fill"></i> Modificar</button>
+                        <button onclick="eliminarInm(${i.id})" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            const inmOptions = '<option value="">Sin inmueble asignado...</option>' + cacheInmuebles.map(i => `<option value="${i.id}">${i.tipo} - ${i.direccion} (${i.precioAlquiler}€) [${i.estado}]</option>`).join('');
+            document.getElementById('inqInmuebleSelect').innerHTML = inmOptions;
+            document.getElementById('editInqInmuebleSelect').innerHTML = inmOptions;
+
+            const resInq = await fetch(`${API_URL}/inquilinos`);
+            cacheInquilinos = await resInq.json();
+
+            document.getElementById('tablaInquilinos').innerHTML = cacheInquilinos.map(iq => `
+                <tr>
+                    <td><span class="badge bg-secondary">${iq.dniNie}</span></td>
+                    <td class="fw-bold">${iq.nombre} ${iq.apellido1 || ''} ${iq.apellido2 || ''}</td>
+                    <td><i class="bi bi-envelope me-1"></i>${iq.email}<br><small class="text-muted"><i class="bi bi-telephone me-1"></i>${iq.telefono || '-'}</small></td>
+                    <td>${iq.inmueble ? '<i class="bi bi-house-check text-success me-1"></i>' + iq.inmueble.direccion : '<span class="text-muted">Ninguno</span>'}</td>
+                    <td class="small">${iq.fechaInicioContrato || '-'}</td>
+                    <td>
+                        <button onclick="abrirModalInq(${iq.id})" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-fill"></i> Modificar</button>
+                        <button onclick="eliminarInq(${iq.id})" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('formPropietario').onsubmit = async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/propietarios`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    nombre: document.getElementById('propNombre').value,
+                    apellido1: document.getElementById('propApellido1').value,
+                    apellido2: document.getElementById('propApellido2').value,
+                    dniNie: document.getElementById('propDni').value,
+                    email: document.getElementById('propEmail').value,
+                    telefono: document.getElementById('propTel').value,
+                    iban: document.getElementById('propIban').value,
+                    direccionPostal: document.getElementById('propDirPostal').value,
+                    notas: document.getElementById('propNotas').value
+                })
+            });
+            document.getElementById('formPropietario').reset();
+            cargarTodo();
+            mostrarAlerta('✅ Propietario creado con éxito.', 'success');
+        };
+
+        document.getElementById('formInmueble').onsubmit = async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/inmuebles`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    tipo: document.getElementById('inmTipo').value,
+                    direccion: document.getElementById('inmDir').value,
+                    poblacion: document.getElementById('inmPoblacion').value,
+                    codigoPostal: document.getElementById('inmCp').value,
+                    m2: document.getElementById('inmM2').value,
+                    habitaciones: document.getElementById('inmHab').value,
+                    baños: document.getElementById('inmBanos').value,
+                    precioAlquiler: parseFloat(document.getElementById('inmPrecio').value),
+                    honorariosAgencia: parseFloat(document.getElementById('inmHonorarios').value || 0),
+                    estado: document.getElementById('inmEstado').value,
+                    propietarioId: document.getElementById('inmPropietarioSelect').value,
+                    notas: document.getElementById('inmNotas').value
+                })
+            });
+            document.getElementById('formInmueble').reset();
+            cargarTodo();
+            mostrarAlerta('✅ Inmueble guardado correctamente con todos los atributos.', 'success');
+        };
+
+        document.getElementById('formInquilino').onsubmit = async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/inquilinos`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    nombre: document.getElementById('inqNombre').value,
+                    apellido1: document.getElementById('inqApellido1').value,
+                    apellido2: document.getElementById('inqApellido2').value,
+                    dniNie: document.getElementById('inqDni').value,
+                    email: document.getElementById('inqEmail').value,
+                    telefono: document.getElementById('inqTel').value,
+                    iban: document.getElementById('inqIban').value,
+                    fechaInicioContrato: document.getElementById('inqFechaContrato').value,
+                    inmuebleId: document.getElementById('inqInmuebleSelect').value
+                })
+            });
+            document.getElementById('formInquilino').reset();
+            cargarTodo();
+            mostrarAlerta('✅ Inquilino registrado y vinculado.', 'success');
+        };
+
+        function abrirModalProp(id) {
+            const p = cachePropietarios.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('editPropId').value = p.id;
+            document.getElementById('editPropNombre').value = p.nombre || '';
+            document.getElementById('editPropApellido1').value = p.apellido1 || '';
+            document.getElementById('editPropApellido2').value = p.apellido2 || '';
+            document.getElementById('editPropDni').value = p.dniNie || '';
+            document.getElementById('editPropEmail').value = p.email || '';
+            document.getElementById('editPropTel').value = p.telefono || '';
+            document.getElementById('editPropIban').value = p.iban || '';
+            document.getElementById('editPropDirPostal').value = p.direccionPostal || '';
+            document.getElementById('editPropNotas').value = p.notas || '';
+            new bootstrap.Modal(document.getElementById('modalEditPropietario')).show();
+        }
+
+        document.getElementById('formEditPropietario').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPropId').value;
+            await fetch(`${API_URL}/propietarios/${id}`, {
+                method: 'PUT', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    nombre: document.getElementById('editPropNombre').value,
+                    apellido1: document.getElementById('editPropApellido1').value,
+                    apellido2: document.getElementById('editPropApellido2').value,
+                    dniNie: document.getElementById('editPropDni').value,
+                    email: document.getElementById('editPropEmail').value,
+                    telefono: document.getElementById('editPropTel').value,
+                    iban: document.getElementById('editPropIban').value,
+                    direccionPostal: document.getElementById('editPropDirPostal').value,
+                    notas: document.getElementById('editPropNotas').value
+                })
+            });
+            bootstrap.Modal.getInstance(document.getElementById('modalEditPropietario')).hide();
+            cargarTodo();
+            mostrarAlerta('✅ Propietario modificado correctamente.', 'success');
+        };
+
+        function abrirModalInm(id) {
+            const i = cacheInmuebles.find(item => item.id === id);
+            if (!i) return;
+            document.getElementById('editInmId').value = i.id;
+            document.getElementById('editInmTipo').value = i.tipo || 'PISO';
+            document.getElementById('editInmDir').value = i.direccion || '';
+            document.getElementById('editInmPoblacion').value = i.poblacion || '';
+            document.getElementById('editInmCp').value = i.codigoPostal || '';
+            document.getElementById('editInmM2').value = i.m2 || '';
+            document.getElementById('editInmHab').value = i.habitaciones || '';
+            document.getElementById('editInmBanos').value = i.baños || '';
+            document.getElementById('editInmPrecio').value = i.precioAlquiler || '';
+            document.getElementById('editInmHonorarios').value = i.honorariosAgencia || 0;
+            document.getElementById('editInmEstado').value = i.estado || 'DISPONIBLE';
+            document.getElementById('editInmPropietarioSelect').value = i.propietario ? i.propietario.id : '';
+            document.getElementById('editInmNotas').value = i.notas || '';
+            new bootstrap.Modal(document.getElementById('modalEditInmueble')).show();
+        }
+
+        document.getElementById('formEditInmueble').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editInmId').value;
+            await fetch(`${API_URL}/inmuebles/${id}`, {
+                method: 'PUT', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    tipo: document.getElementById('editInmTipo').value,
+                    direccion: document.getElementById('editInmDir').value,
+                    poblacion: document.getElementById('editInmPoblacion').value,
+                    codigoPostal: document.getElementById('editInmCp').value,
+                    m2: document.getElementById('editInmM2').value,
+                    habitaciones: document.getElementById('editInmHab').value,
+                    baños: document.getElementById('editInmBanos').value,
+                    precioAlquiler: parseFloat(document.getElementById('editInmPrecio').value),
+                    honorariosAgencia: parseFloat(document.getElementById('editInmHonorarios').value || 0),
+                    estado: document.getElementById('editInmEstado').value,
+                    propietarioId: document.getElementById('editInmPropietarioSelect').value,
+                    notas: document.getElementById('editInmNotas').value
+                })
+            });
+            bootstrap.Modal.getInstance(document.getElementById('modalEditInmueble')).hide();
+            cargarTodo();
+            mostrarAlerta('✅ Inmueble modificado con éxito.', 'success');
+        };
+
+        function abrirModalInq(id) {
+            const inq = cacheInquilinos.find(item => item.id === id);
+            if (!inq) return;
+            document.getElementById('editInqId').value = inq.id;
+            document.getElementById('editInqNombre').value = inq.nombre || '';
+            document.getElementById('editInqApellido1').value = inq.apellido1 || '';
+            document.getElementById('editInqApellido2').value = inq.apellido2 || '';
+            document.getElementById('editInqDni').value = inq.dniNie || '';
+            document.getElementById('editInqEmail').value = inq.email || '';
+            document.getElementById('editInqTel').value = inq.telefono || '';
+            document.getElementById('editInqIban').value = inq.iban || '';
+            document.getElementById('editInqFechaContrato').value = inq.fechaInicioContrato || '';
+            document.getElementById('editInqInmuebleSelect').value = inq.inmueble ? inq.inmueble.id : '';
+            new bootstrap.Modal(document.getElementById('modalEditInquilino')).show();
+        }
+
+        document.getElementById('formEditInquilino').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editInqId').value;
+            await fetch(`${API_URL}/inquilinos/${id}`, {
+                method: 'PUT', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    nombre: document.getElementById('editInqNombre').value,
+                    apellido1: document.getElementById('editInqApellido1').value,
+                    apellido2: document.getElementById('editInqApellido2').value,
+                    dniNie: document.getElementById('editInqDni').value,
+                    email: document.getElementById('editInqEmail').value,
+                    telefono: document.getElementById('editInqTel').value,
+                    iban: document.getElementById('editInqIban').value,
+                    fechaInicioContrato: document.getElementById('editInqFechaContrato').value,
+                    inmuebleId: document.getElementById('editInqInmuebleSelect').value
+                })
+            });
+            bootstrap.Modal.getInstance(document.getElementById('modalEditInquilino')).hide();
+            cargarTodo();
+            mostrarAlerta('✅ Inquilino modificado con éxito.', 'success');
+        };
+
+        async function eliminarProp(id) {
+            if (confirm('¿Deseas eliminar este propietario?')) {
+                await fetch(`${API_URL}/propietarios/${id}`, { method: 'DELETE' });
+                cargarTodo();
+                mostrarAlerta('🗑️ Propietario eliminado.', 'warning');
+            }
+        }
+
+        async function eliminarInm(id) {
+            if (confirm('¿Deseas eliminar este inmueble?')) {
+                await fetch(`${API_URL}/inmuebles/${id}`, { method: 'DELETE' });
+                cargarTodo();
+                mostrarAlerta('🗑️ Inmueble eliminado.', 'warning');
+            }
+        }
+
+        async function eliminarInq(id) {
+            if (confirm('¿Deseas eliminar este inquilino?')) {
+                await fetch(`${API_URL}/inquilinos/${id}`, { method: 'DELETE' });
+                cargarTodo();
+                mostrarAlerta('🗑️ Inquilino eliminado.', 'warning');
+            }
+        }
+
+        async function enviarFacturasInquilinos() {
+            let r = await fetch(`${API_URL}/facturacion/enviar-inquilinos`, {method:'POST'});
+            let res = await r.json();
+            mostrarAlerta(`📧 Se han enviado ${res.enviados} facturas en PDF a los inquilinos.`, 'success');
+        }
+
+        async function enviarLiquidacionesPropietarios() {
+            let r = await fetch(`${API_URL}/facturacion/enviar-propietarios`, {method:'POST'});
+            let res = await r.json();
+            mostrarAlerta(`📑 Se han enviado ${res.enviados} liquidaciones en PDF a los propietarios.`, 'info');
+        }
+
+        function mostrarAlerta(msg, type) {
+            document.getElementById('alertBox').innerHTML = `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        }
+
+        window.onload = cargarTodo;
+    </script>
+</body>
+</html>
